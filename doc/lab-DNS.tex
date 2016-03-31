@@ -1,0 +1,135 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% FILE         : lab-DNS.tex
+% AUTHOR       : (C) Copyright 2014 by Peter C. Chapin
+% LAST REVISED : 2014-01-30
+% SUBJECT      : DNS lab for Network Programming at Vermont Technical College
+%
+% In this lab the students will write a program that queries a DNS by constructing the queries
+% themselves (and launching them as UDP packets).
+%
+%       Peter C. Chapin
+%       Computer Information Systems Department
+%       Vermont Technical College
+%       Williston, VT. 05495
+%       PChapin@vtc.vsc.edu
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% ++++++++++++++++++++++++++++++++
+% Preamble and global declarations
+% ++++++++++++++++++++++++++++++++
+\documentclass[twocolumn]{article}
+% \pagestyle{headings}
+\setlength{\parindent}{0em}
+\setlength{\parskip}{1.75ex plus0.5ex minus0.5ex}
+
+% +++++++++++++++++++
+% The document itself
+% +++++++++++++++++++
+\begin{document}
+
+% ----------------------
+% Title page information
+% ----------------------
+\title{UDP and the Domain Name System}
+\author{\copyright\ Copyright 2014 by Peter C. Chapin}
+\date{Last Revised: January 30, 2014}
+\maketitle
+
+\section*{Introduction}
+
+In this lab you will explore UDP and the domain name system by writing a program that does DNS
+queries manually. Although there are well known library functions for sending queries to a name
+server (\texttt{gethostbyname()} and \texttt{gethostbyaddr()}), you will not use those functions
+in this lab. By constructing the DNS query and by interpreting the response yourself you will
+gain more insight into how the domain name system works. In addition, since most DNS
+transactions use UDP, this lab will give you some exposure to this important, low level
+transport protocol.
+
+\section{The Program}
+
+Your program should take two command line parameters. The first parameter will be the IP address
+of the name server you wish to query. The second parameter will be the name you wish to have
+converted into an IP address. A typical invocation of the program might be
+
+\begin{verbatim}
+$ dns 155.42.16.33 lemuria.cis.vtc.edu
+155.42.234.80
+\end{verbatim}
+
+In this example I am using one of the main VTC name servers to handle the query. I suggest that
+you use this server in your testing as well. If you accidently send the server a malformed
+packet, the server should just return an error code in a normal way. If it does otherwise (for
+example if it crashes), that would be a serious security issue. You can assume the main VTC
+name servers are robust against such problems.
+
+Many names have multiple IP addresses associated with them. Your program only needs to report
+the first one but it should not be confused by any additional addresses that might be present.
+Also your program does not need to provide any facilities for doing reverse lookups (converting
+IP addresses into names). The program \texttt{nslookup} provides all these features and more.
+Our purpose is not to duplicate the functionality of \texttt{nslookup} but instead to explore
+how such a program might be created.
+
+Refer to your class notes for details on the format of a DNS query and a DNS response. There are
+many RFCs pertaining to the domain name system. RFC-1034 and RFC-1035 are the primary documents
+describing the system. RFC-1034 describes basic concepts and RFC-1035 describes implementation
+details, including the particulars of the DNS protocol. You should review these RFCs; you may
+need to consult them as you build your program.
+
+Since preparing the DNS packets will take a resonable amount of code, you should break your
+program up into several suitable functions. I suggest writing a function that constructs a
+request packet, a function to send the request, a function that receives the response, and
+another function that disects the response looking for the desired answer. Be sure you include
+appropriate error handling on all network related calls. Try to build a robust program.
+
+Because UDP is no more reliable than IP, you will need to deal with the possibility that your
+packets might be lost forever on the network. If you call the UDP \texttt{recvfrom()} function
+without setting up a time out your program might block forever waiting for a packet that never
+comes. On Unix systems you may deal with this time out issue by either using the
+\texttt{alarm()} function and setting up a signal handler for the SIGALRM signal, or by setting
+an appropriate socket option. On Windows systems it is necessary to use \texttt{select} on the
+socket handle to determine when new data arrives. The \texttt{select} function allows a time out
+interval to be specified (you can also use \texttt{select} on Unix, but it is more complicated
+to set up than the other solutions).
+
+Note that you can check your query before you have written any code to process the reply. Use
+the network analyzer to observe the UDP packets being emitted by your system. The network
+analyzer software will recognize and decode the DNS query that your program created---assuming
+you did it right---thus allowing you to verify its format. You can also observe the DNS reply
+coming back from the name server. I encourage you to do this.
+
+\section{Questions to Ponder}
+
+The following questions are intended to be food for thought. In your report you may wish to
+address these questions or similar issues.
+
+\begin{enumerate}
+  
+\item How many packets are exchanged between your DNS client and the server? If you had used a
+TCP connection instead (about) how many packets would you have expected to see?
+  
+\item Your query and the name server's response could both fit into a single datagram. What is
+the significance of this?
+  
+\item What would be involved in modifying your program so that it could use several different
+name servers? Suppose it read name server addresses out of a configuration file and tried them
+in order, if necessary, until it found one that responded to the query. How much network related
+setup would you need to do in order to communicate with each name server? You don't need to make
+these modifications; just describe in general what you would need to change.
+  
+\end{enumerate}
+
+\section{Report}
+
+For this lab your report should include sections that briefly describe the DNS protocol in
+general, describe your software, discuss how you tested your system and what you observed, and a
+conclusion. Imagine that your audience is other programmers who might want to modify your
+software and who are only familiar with the DNS protocol in a general way.
+
+You can address the questions in the previous section in your report, but \emph{don't simply
+  answer the questions directly}. Instead integrate your answers into your discussion smoothly.
+The intent of these questions is to give you some ideas about topics to elaborate on in your
+report; you should regard them as guides. You are free to adjust exactly what you say in your
+report according to what seems best to you.
+
+\end{document}
+

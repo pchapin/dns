@@ -1,0 +1,11 @@
+
+# LaTeX generated files.
+*.aux
+*.log
+*.pdf
+
+# Code::Blocks generated files.
+bin
+obj
+*.depend
+*.layout
