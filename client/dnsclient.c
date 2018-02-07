@@ -8,7 +8,7 @@ Please send comments or bug reports to
      Computer Information Systems
      Vermont Technical College
      Williston, VT 05495
-     PChapin@vtc.vsc.edu
+     pchapin@vtc.edu
 ****************************************************************************/
 
 #include <errno.h>

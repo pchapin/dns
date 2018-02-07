@@ -9,3 +9,7 @@ bin
 obj
 *.depend
 *.layout
+
+# Makefile generated files.
+dnsserver
+*.o

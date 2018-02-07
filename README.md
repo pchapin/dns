@@ -8,5 +8,4 @@ building a high performance system has educational merit as well and this is not
 the table.
 
 Peter C. Chapin  
-PChapin@vtc.vsc.edu
-
+chapinp@acm.org  
