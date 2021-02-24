@@ -60,6 +60,7 @@ void initialize_signal_handling( )
 unsigned char *install_domain_name(unsigned char *p, char *domain_name)
 {
     // .lemuria.cis.vtc.edu\0
+    // 7lemuria3cis3vtc3edu0   Note that the numbers are *NOT* ASCII codes, but binary values.
     *p++ = '.';
     strcpy((char *)p, domain_name);
     p--;
@@ -160,7 +161,7 @@ int main(int argc, char **argv)
     if( rc == -1 ) {
         if( errno == EINTR ) {
             // This isn't perfect because in theory there are other reasons for EINTR.
-            printf( "Timed out trying to receive DNS reply\n" );
+            printf( "Unable to receive DNS reply: Timed out\n" );
         }
         else {
             perror( "Unable to receive DNS reply" );
