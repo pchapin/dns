@@ -20,14 +20,12 @@ Please send comments or bug reports to
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#ifndef S_SPLINT_S    // Workaround for splint.
 #include <unistd.h>
-#endif
 
 #define WORKSPACE_SIZE 512
 #define NAME_SIZE      16
 
-void SIGALRM_handler( int signal_number )
+static void SIGALRM_handler( int __attribute((unused)) signal_number )
 {
     // Do nothing. Deal with the problem when recvfrom() returns with EINTR.
     // We can't, in theory, use printf() or similar functions from inside a signal handler.
@@ -40,7 +38,7 @@ void SIGALRM_handler( int signal_number )
  * This function arranges to have SIGALRM_handler() called when a SIGALRM signal occurs. This
  * happens when recvfrom() takes too long to return.
  */
-void initialize_signal_handling( )
+static void initialize_signal_handling( void )
 {
     struct sigaction action;
 
@@ -57,7 +55,8 @@ void initialize_signal_handling( )
  * \param domain_name Pointer to the name itself in human readible form.
  * \return A pointer just past the end of the installed domain name (including the null byte).
  */
-unsigned char *install_domain_name(unsigned char *p, char *domain_name)
+// TODO: This function does not handle names that are too long.
+static unsigned char *install_domain_name(unsigned char *p, char *domain_name)
 {
     // .lemuria.cis.vtc.edu\0
     // 7lemuria3cis3vtc3edu0   Note that the numbers are *NOT* ASCII codes, but binary values.
@@ -80,7 +79,7 @@ unsigned char *install_domain_name(unsigned char *p, char *domain_name)
 int main(int argc, char **argv)
 {
     int            socket_handle;
-    int            rc;              // Used to hold return codes from network functions.
+    ssize_t        rc;              // Used to hold return codes from network functions.
     unsigned short port = 53;                  // Default DNS port number.
     unsigned char  workspace[WORKSPACE_SIZE];  // Used to hold datagrams.
     char           name_buffer[NAME_SIZE];     // Used to hold the textual IP address.
@@ -160,7 +159,7 @@ int main(int argc, char **argv)
                   &address_length);  // Pointer to variable to hold address size.
     if( rc == -1 ) {
         if( errno == EINTR ) {
-            // This isn't perfect because in theory there are other reasons for EINTR.
+            // TODO: This isn't perfect because in theory there are other reasons for EINTR.
             printf( "Unable to receive DNS reply: Timed out\n" );
         }
         else {
@@ -177,6 +176,12 @@ int main(int argc, char **argv)
     // We should also make sure the received datagram is large enough.
     //
     p  = workspace;
+    if( (p[3] & 0x0F) != 0 ) {
+        printf( "DNS server returned an error: %d\n", p[3] & 0x0F );
+        close( socket_handle );
+        return EXIT_FAILURE;
+    }
+    // TODO: Verify that the response contains at least one answer.
     p += 12;  // p now points past the header.
     p += 2 + strlen( argv[2] ) + 4;  // p now points at the answer.
     if( (*p & 0xC0) == 0xC0 ) {

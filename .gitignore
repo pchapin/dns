@@ -4,12 +4,7 @@
 *.log
 *.pdf
 
-# Code::Blocks generated files.
-bin
-obj
-*.depend
-*.layout
-
 # Makefile generated files.
+dnsclient
 dnsserver
 *.o
